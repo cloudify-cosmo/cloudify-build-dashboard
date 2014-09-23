@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html ng-app="">
+
+  <head>
+    <title>Cloudify Tests Dashboard</title>
+    <script data-require="angular.js@1.2.22" data-semver="1.2.22" src="https://code.angularjs.org/1.2.22/angular.js"></script>
+    <script data-require="lodash.js@2.4.1" data-semver="2.4.1" src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body ng-controller="TravisCtrl">
+    <div id="header">
+      Cloudify Tests
+      <span>Updated at: {{ updatedAt }}</span>
+    </div>
+    <div id="wrapper">
+      <div ng-repeat="d in data track by d.name" class="report {{ d.state }}">
+        <a href='{{d.travisBuildLink}}'>{{ d.displayName }}</a>
+        <div>{{ d.customText }}</div>
+      </div>
+    </div>
+    <div id="disabled">
+      <div ng-repeat="repo in disabled track by repo.name" class="disabled report">
+        {{ repo.displayName }}
+      </div>
+    </div>
+    <script>
+      function processRepoResponse(repo, response) {
+        var builds = _.filter(response.data, {'branch': 'master', 'event_type': 'push'});
+        if (builds.length == 0) {
+          repo.state = 'not-running';
+          return null;
+        }
+        var build = builds[0];
+        repo.travisBuildLink = 'https://travis-ci.org/' + repo.name + '/builds/' + build.id 
+        repo.state = build.state;
+        if (build.state == 'created') {
+          repo.customText = '0s';
+        } else if (build.state == 'started') {
+          var startedAt = new Date(build.started_at);
+          var currentTime = new Date();
+          repo.customText = Math.max(0, Math.round((currentTime.getTime() - startedAt.getTime()) / 1000)) + 's';
+        } else if (build.state == 'finished' && build.result != 0) {
+            repo.state = 'failed'
+        }
+        return build;
+      }
+
+      function getCurrentTime() {
+        var date = new Date();
+        var options = {
+          hour12: false,
+        };
+        return date.toLocaleTimeString('en-us', options).substring(0, 5);
+      }
+
+      function TravisCtrl($http, $scope, $timeout, $log) {
+        
+        var repositories = [
+          'cloudify-cosmo/cloudify-manager',
+          'cloudify-cosmo/cloudify-cli',
+          'cloudify-cosmo/cloudify-dsl-parser',
+          'cloudify-cosmo/cloudify-rest-client',
+          'cloudify-cosmo/cloudify-diamond-plugin',
+          'cloudify-cosmo/cloudify-docker-plugin',
+          'cloudify-cosmo/cloudify-cloudstack-plugin',
+          'cloudify-cosmo/cloudify-script-plugin',
+          'cloudify-cosmo/cloudify-chef-plugin',
+          'cloudify-cosmo/cloudify-puppet-plugin',
+          'cloudify-cosmo/cloudify-libcloud-plugin',
+          'cloudify-cosmo/cloudify-plugins-common',
+          'cloudify-cosmo/cloudify-fabric-plugin',
+          'cloudify-cosmo/cloudify-amqp-influxdb',
+          'cloudify-cosmo/cloudify-system-tests',
+          'cloudify-cosmo/cloudify-plugin-template',
+          'cloudify-cosmo/cloudify-version-tool',
+          'cloudify-cosmo/packman',
+          'cloudify-cosmo/repex',
+          'nir0s/jingen',
+          'nir0s/jocker'
+        ];
+
+        repos = _.map(repositories, function(name) {
+          return {
+            'name': name,
+            'displayName': name.replace('cloudify-cosmo/', '').replace('nir0s/', ''),
+            'travisBuildLink': '',
+            'travisApiLink': 'https://api.travis-ci.org/repos/' + name + '/builds?event_type=push',
+            'state': 'uninitialized',
+            'customText': '0s'
+          };
+        });
+        
+        // DEBUG
+        // states = ['uninitialized', 'created', 'started', 'finished', 'failed', 'not-running'];
+        // for (var i = 0; i < repos.length; i++) {
+        //   var number = Math.floor(Math.random() * 100);
+        //   repos[i].state = states[number % states.length];
+        // }
+
+        $scope.data = repos.sort(function(x, y) {
+          return x.displayName.localeCompare(y.displayName);
+        });
+        $scope.disabled = [];
+        $scope.updatedAt = getCurrentTime();
+
+        function loadStatus(repo) {
+          $log.info('making request to: ' + repo.travisApiLink);
+          var timeout = 60000;
+          $http.get(repo.travisApiLink).then(function(response) {
+              var build = processRepoResponse(repo, response);
+              if (build) {
+                $log.info('build: ' + JSON.stringify(build));
+                if (build.state == 'started' || build.state == 'created') {
+                  timeout = 10000;
+                }
+              }
+              $scope.data = repos.filter(function(r) {
+                return r.state != 'not-running';
+              });
+              $scope.disabled = repos.filter(function(r) {
+                return r.state == 'not-running';
+              });
+              $scope.updatedAt = getCurrentTime();
+              
+              if (repo.state != 'not-running') {
+                $timeout(function() {
+                  loadStatus(repo);
+                }, timeout);                
+              }
+          }, function(result) {
+            $log.error('unable to get results for: ' + repo);
+            $timeout(function() {
+              loadStatus(repo);
+            }, timeout);
+          });
+        }
+        
+        for ( var i = 0; i < repositories.length; i ++) {
+          loadStatus(repos[i]);
+        }
+        
+      }
+    </script>
+  </body>
+
+</html>

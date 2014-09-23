@@ -1,0 +1,104 @@
+body {
+  font-family: Helvetica, sans-serif;
+  background: #000000;
+  color: #ffffff;
+  margin: 6px;
+}
+
+#header {
+  background: #003366;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#header span {
+  float: right;
+}
+
+#wrapper {
+  margin-top: 10px;
+}
+
+div.report {
+  width: 360px;
+  display: inline-block;
+  padding-top: 34px;
+  padding-bottom: 16px;
+  font-size: 26px;
+  background: #C0C0C0;
+  text-align: center;
+  font-weight: bold;
+  margin: 4px;
+  border: 1px solid black;
+}
+
+div.report.failed {
+  background: #FF0000;
+}
+
+div.report.started {
+  background:#ffeb3b
+}
+
+div.report.created {
+  background: #FF9900;
+}
+
+div.report.finished {
+  background:#00CC00;
+}
+
+div.report.uninitialized {
+  border: 1px dashed gray;
+  background: #000000;
+  color: #ffffff;
+}
+
+/*div.report.started, div.report.created {
+  background-image: url('progress.gif');
+  background-size: 24px 24px;
+  background-repeat: no-repeat;
+  background-position: 96% 88%;
+}
+*/
+
+div.report div {
+  color: #000000;
+  text-align: left;
+  font-size: 14px;
+  position: relative;
+  top: 10px;
+  left: 12px;
+  visibility: hidden;
+}
+
+div.report.created div {
+  font-size: 14px;
+}
+
+div.report.started div, div.report.created div {
+  visibility: visible;
+}
+
+div.report.uninitialized a {
+  color: #666666;
+}
+
+a {
+  color: #000000;
+  text-decoration: none;
+}
+
+#disabled {
+  margin-top: 2px;
+}
+
+div.disabled {
+  background: #333333;
+  color: #b3b3b3;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
