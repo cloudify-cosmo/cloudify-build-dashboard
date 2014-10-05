@@ -25,27 +25,6 @@
       </div>
     </div>
     <script>
-      function processRepoResponse(repo, response) {
-        var builds = _.filter(response.data, {'branch': 'master', 'event_type': 'push'});
-        if (builds.length == 0) {
-          repo.state = 'not-running';
-          return null;
-        }
-        var build = builds[0];
-        repo.travisBuildLink = 'https://travis-ci.org/' + repo.name + '/builds/' + build.id 
-        repo.state = build.state;
-        if (build.state == 'created') {
-          repo.customText = '0s';
-        } else if (build.state == 'started') {
-          var startedAt = new Date(build.started_at);
-          var currentTime = new Date();
-          repo.customText = Math.max(0, Math.round((currentTime.getTime() - startedAt.getTime()) / 1000)) + 's';
-        } else if (build.state == 'finished' && build.result != 0) {
-            repo.state = 'failed'
-        }
-        return build;
-      }
-
       function getCurrentTime() {
         var date = new Date();
         var options = {
@@ -87,10 +66,42 @@
             'travisBuildLink': '',
             'travisApiLink': 'https://api.travis-ci.org/repos/' + name + '/builds?event_type=push',
             'state': 'uninitialized',
-            'customText': '0s'
+            'customText': '0s',
+            'buildsPage': 0
           };
         });
         
+        function processRepoResponse(repo, response) {
+          var builds = _.filter(response.data, {'branch': 'master', 'event_type': 'push'});
+          if (builds.length == 0) {
+            if (response.data.length > 0 && repo.buildsPage < 10) {
+              repo.buildsPage += 1;
+              lastNumber = response.data[response.data.length-1].number;
+              paramConcatIndex = repo.travisApiLink.lastIndexOf("&")
+              if (paramConcatIndex != -1)
+                repo.travisApiLink = repo.travisApiLink.substring(0, paramConcatIndex);
+              repo.travisApiLink += "&after_number=" + lastNumber;
+              loadStatus(repo);
+            }
+
+            repo.state = 'not-running';
+            return null;
+          }
+          var build = builds[0];
+          repo.travisBuildLink = 'https://travis-ci.org/' + repo.name + '/builds/' + build.id
+          repo.state = build.state;
+          if (build.state == 'created') {
+            repo.customText = '0s';
+          } else if (build.state == 'started') {
+            var startedAt = new Date(build.started_at);
+            var currentTime = new Date();
+            repo.customText = Math.max(0, Math.round((currentTime.getTime() - startedAt.getTime()) / 1000)) + 's';
+          } else if (build.state == 'finished' && build.result != 0) {
+              repo.state = 'failed'
+          }
+          return build;
+        }
+
         // DEBUG
         // states = ['uninitialized', 'created', 'started', 'finished', 'failed', 'not-running'];
         // for (var i = 0; i < repos.length; i++) {
