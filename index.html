@@ -85,7 +85,7 @@
         
         function isBuildBranch(branchName) {
             var regexp = new RegExp(/^\d*\.\d*.*/);
-            return regexp.exec(branchName) != null;
+            return regexp.exec(branchName) != null && branchName.lastIndexOf('build') == -1;
         }
 
         function processRepoResponse(repo, response) {
