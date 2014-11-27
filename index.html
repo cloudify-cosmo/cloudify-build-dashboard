@@ -84,8 +84,8 @@
         });
         
         function isBuildBranch(branchName) {
-            var lastIndex = branchName.lastIndexOf('build');
-            return (lastIndex != -1) && (lastIndex + 'build'.length == branchName.length);
+            var regexp = new RegExp(/^\d*\.\d*.*/);
+            return regexp.exec(branchName) != null;
         }
 
         function processRepoResponse(repo, response) {
