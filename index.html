@@ -90,7 +90,7 @@
 
         function processRepoResponse(repo, response) {
           var builds = _.filter(response.data, function(build) {
-            return (isBuildBranch(build.branch) || build.branch == 'master') && build.event_type == 'push';
+            return (isBuildBranch(build.branch) || build.branch == 'master') && build.event_type == 'push' && !(build.state === 'finished' && build.duration == 0);
           });
 
           builds = builds.sort(function(x, y) {
