@@ -42,7 +42,7 @@
       }
 
       function TravisCtrl($http, $scope, $timeout, $log) {
-        
+
         var repositories = [
           'cloudify-cosmo/cloudify-manager',
           'cloudify-cosmo/cloudify-cli',
@@ -67,6 +67,7 @@
           'cloudify-cosmo/cloudify-version-tool',
           'cloudify-cosmo/cloudify-nodecellar-example',
           'cloudify-cosmo/cloudify-manager-blueprints',
+          'cloudify-cosmo/getcloudify.org',
           'cloudify-cosmo/packman',
           'cloudify-cosmo/repex',
           'nir0s/jingen',
@@ -85,7 +86,7 @@
             'branch': 'master'
           };
         });
-        
+
         function isBuildBranch(branchName) {
             var regexp = new RegExp(/^\d*\.\d*.*/);
             return regexp.exec(branchName) != null && branchName.lastIndexOf('build') == -1;
@@ -177,11 +178,11 @@
                 return r.state == 'not-running';
               });
               $scope.updatedAt = getCurrentTime();
-              
+
               if (repo.state != 'not-running') {
                 $timeout(function() {
                   loadStatus(repo);
-                }, timeout);                
+                }, timeout);
               }
           }, function(result) {
             $log.error('unable to get results for: ' + repo);
@@ -190,11 +191,11 @@
             }, timeout);
           });
         }
-        
+
         for ( var i = 0; i < repositories.length; i ++) {
           loadStatus(repos[i]);
         }
-        
+
       }
     </script>
   </body>
