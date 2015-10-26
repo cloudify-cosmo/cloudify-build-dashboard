@@ -15,20 +15,20 @@
     </div>
     <div id="wrapper">
       <span class="branch">master</span>
-      <div ng-repeat="d in data track by d.name" class="report {{ d.state }}">
+      <div ng-repeat="d in data track by d.displayName" class="report {{ d.state }}">
         <a href='{{d.travisBuildLink}}'>{{ d.displayName }}</a>
         <div>{{ d.customText }}</div>
       </div>
     </div>
-    <div id="builds">
+    <!-- <div id="builds">
       <span class="branch">build</span>
       <div ng-repeat="d in builds track by d.name" class="report {{ d.state }}">
         <a href='{{d.travisBuildLink}}'>{{ d.displayName }}</a>
         <div>{{ d.customText }}</div>
       </div>
-    </div>
+    </div>-->
     <div id="disabled">
-      <div ng-repeat="repo in disabled track by repo.name" class="disabled report">
+      <div ng-repeat="repo in disabled track by repo.displayName" class="disabled report">
         {{ repo.displayName }}
       </div>
     </div>
@@ -66,19 +66,28 @@
           'cloudify-cosmo/cloudify-manager-blueprints',
           'cloudify-cosmo/packman',
           'cloudify-cosmo/repex',
-          'cloudify-cosmo/flask-securest'
+          'cloudify-cosmo/flask-securest',
+          ['Bootstrap Sanity', 'cloudify-cosmo/cloudify-manager-blueprints', 'bootstrap-sanity']
         ];
 
         repos = _.map(repositories, function(name) {
+          repo_name = name;
+          title = name;
+          branch = 'master';
+          if (repo_name instanceof Array) {
+            repo_name = name[1];
+            title = name[0];
+            branch = name[2];
+          }
           return {
-            'name': name,
-            'displayName': name.replace('cloudify-cosmo/', '').replace('nir0s/', ''),
+            'name': repo_name,
+            'displayName': title.replace('cloudify-cosmo/', ''),
             'travisBuildLink': '',
-            'travisApiLink': 'https://api.travis-ci.org/repos/' + name + '/builds?event_type=push',
+            'travisApiLink': 'https://api.travis-ci.org/repos/' + repo_name + '/builds?event_type=push',
             'state': 'uninitialized',
             'customText': '0s',
             'buildsPage': 0,
-            'branch': 'master'
+            'branch': branch
           };
         });
 
@@ -89,7 +98,7 @@
 
         function processRepoResponse(repo, response) {
           var builds = _.filter(response.data, function(build) {
-            return (isBuildBranch(build.branch) || build.branch == 'master') && build.event_type == 'push' && !(build.state === 'finished' && build.duration == 0);
+            return build.branch == repo.branch && build.event_type == 'push' && !(build.state === 'finished' && build.duration == 0);
           });
 
           builds = builds.sort(function(x, y) {
@@ -164,7 +173,7 @@
                 }
               }
               $scope.data = repos.filter(function(r) {
-                return r.state != 'not-running' && r.branch == 'master';
+                return r.state != 'not-running';
               });
               $scope.builds = repos.filter(function(r) {
                 return r.state != 'not-running' && isBuildBranch(r.branch);
