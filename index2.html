@@ -8,22 +8,22 @@
     <link rel="stylesheet" href="style.css" />
   </head>
 
-  <body ng-controller="TravisCtrl">
+  <body ng-controller="CircleCtrl">
     <div id="header">
-      Cloudify's Build Dashboard - Travis
+      Cloudify's Build Dashboard - Circleci
       <span>Updated at: {{ updatedAt }}</span>
     </div>
     <div id="wrapper">
       <span class="branch">master</span>
-      <div ng-repeat="d in data track by d.displayName" class="report {{ d.state }}">
-        <a href='{{d.travisBuildLink}}'>{{ d.displayName }}</a>
+      <div ng-repeat="d in data track by d.displayName" class="report {{ d.lifecycle }}">
+        <a href='{{d.circleBuildLink}}'>{{ d.displayName }}</a>
         <div>{{ d.customText }}</div>
       </div>
     </div>
     <!-- <div id="builds">
       <span class="branch">build</span>
-      <div ng-repeat="d in builds track by d.name" class="report {{ d.state }}">
-        <a href='{{d.travisBuildLink}}'>{{ d.displayName }}</a>
+      <div ng-repeat="d in builds track by d.name" class="report {{ d.lifecycle }}">
+        <a href='{{d.circleBuildLink}}'>{{ d.displayName }}</a>
         <div>{{ d.customText }}</div>
       </div>
     </div>-->
@@ -41,7 +41,7 @@
         return date.toLocaleTimeString('en-us', options).substring(0, 5);
       }
 
-      function TravisCtrl($http, $scope, $timeout, $log) {
+      function CircleCtrl($http, $scope, $timeout, $log) {
 
         var repositories = [
           'cloudify-cosmo/cloudify-manager',
@@ -67,7 +67,6 @@
           'cloudify-cosmo/packman',
           'cloudify-cosmo/repex',
           'cloudify-cosmo/cloudify-agent',
-          'cloudify-cosmo/flask-securest',
           ['Bootstrap Sanity', 'cloudify-cosmo/cloudify-manager-blueprints', 'bootstrap-sanity']
         ];
 
@@ -83,9 +82,9 @@
           return {
             'name': repo_name,
             'displayName': title.replace('cloudify-cosmo/', ''),
-            'travisBuildLink': '',
-            'travisApiLink': 'https://api.travis-ci.org/repos/' + repo_name + '/builds?event_type=push',
-            'state': 'uninitialized',
+            'circleBuildLink': '',
+            'circleApiLink': 'https://circleci.com/api/v1/project/' + repo_name + '/tree/master',
+            'lifecycle': 'uninitialized',
             'customText': '0s',
             'buildsPage': 0,
             'branch': branch
@@ -99,17 +98,17 @@
 
         function processRepoResponse(repo, response) {
           var builds = _.filter(response.data, function(build) {
-            return build.branch == repo.branch && build.event_type == 'push' && !(build.state === 'finished' && build.duration == 0);
+            return build.branch == repo.branch && !(build.lifecycle === 'finished' && build.build_time_millis == 0);
           });
 
           builds = builds.sort(function(x, y) {
-            if (x.started_at == null) {
+            if (x.started_time == null) {
               return -1;
-            } else if (y.started_at == null) {
+            } else if (y.started_time == null) {
               return 1;
             }
-            var xStartedAt = new Date(x.started_at);
-            var yStartedAt = new Date(y.started_at);
+            var xStartedAt = new Date(x.started_time);
+            var yStartedAt = new Date(y.started_time);
             if (xStartedAt < yStartedAt) {
               return 1;
             } else if (yStartedAt < xStartedAt) {
@@ -122,37 +121,37 @@
             if (response.data.length > 0 && repo.buildsPage < 10) {
               repo.buildsPage += 1;
               lastNumber = response.data[response.data.length-1].number;
-              paramConcatIndex = repo.travisApiLink.lastIndexOf("&")
+              paramConcatIndex = repo.circleApiLink.lastIndexOf("&")
               if (paramConcatIndex != -1)
-                repo.travisApiLink = repo.travisApiLink.substring(0, paramConcatIndex);
-              repo.travisApiLink += "&after_number=" + lastNumber;
+                repo.circleApiLink = repo.circleApiLink.substring(0, paramConcatIndex);
+              repo.circleApiLink += "&after_number=" + lastNumber;
               loadStatus(repo);
             }
 
-            repo.state = 'not-running';
+            repo.lifecycle = 'not-running';
             return null;
           }
           var build = builds[0];
           repo.branch = build.branch;
-          repo.travisBuildLink = 'https://travis-ci.org/' + repo.name + '/builds/' + build.id
-          repo.state = build.state;
-          if (build.state == 'created') {
+          repo.circleBuildLink = 'https://circleci.com/gh/' + repo.name + '/' + build.build_num
+          repo.lifecycle = build.lifecycle;
+          if (build.lifecycle == 'created') {
             repo.customText = '0s';
-          } else if (build.state == 'started') {
-            var startedAt = new Date(build.started_at);
+          } else if (build.lifecycle == 'started') {
+            var startedAt = new Date(build.started_time);
             var currentTime = new Date();
             repo.customText = Math.max(0, Math.round((currentTime.getTime() - startedAt.getTime()) / 1000)) + 's';
-          } else if (build.state == 'finished' && build.result != 0) {
-              repo.state = 'failed'
+          } else if (build.lifecycle == 'finished' && build.status == 'failed') {
+              repo.lifecycle = 'failed'
           }
           return build;
         }
 
         // DEBUG
-        // states = ['uninitialized', 'created', 'started', 'finished', 'failed', 'not-running'];
+        // lifecycles = ['uninitialized', 'created', 'started', 'finished', 'failed', 'not-running'];
         // for (var i = 0; i < repos.length; i++) {
         //   var number = Math.floor(Math.random() * 100);
-        //   repos[i].state = states[number % states.length];
+        //   repos[i].lifecycle = lifecycles[number % lifecycles.length];
         // }
 
         $scope.data = repos.sort(function(x, y) {
@@ -163,28 +162,28 @@
         $scope.updatedAt = getCurrentTime();
 
         function loadStatus(repo) {
-          $log.info('making request to: ' + repo.travisApiLink);
+          $log.info('making request to: ' + repo.circleApiLink);
           var timeout = 60000;
-          $http.get(repo.travisApiLink).then(function(response) {
+          $http.get(repo.circleApiLink).then(function(response) {
               var build = processRepoResponse(repo, response);
               if (build) {
                 $log.info('build: ' + JSON.stringify(build));
-                if (build.state == 'started' || build.state == 'created') {
+                if (build.lifecycle == 'started' || build.lifecycle == 'created') {
                   timeout = 10000;
                 }
               }
               $scope.data = repos.filter(function(r) {
-                return r.state != 'not-running';
+                return r.lifecycle != 'not-running';
               });
               $scope.builds = repos.filter(function(r) {
-                return r.state != 'not-running' && isBuildBranch(r.branch);
+                return r.lifecycle != 'not-running' && isBuildBranch(r.branch);
               });
               $scope.disabled = repos.filter(function(r) {
-                return r.state == 'not-running';
+                return r.lifecycle == 'not-running';
               });
               $scope.updatedAt = getCurrentTime();
 
-              if (repo.state != 'not-running') {
+              if (repo.lifecycle != 'not-running') {
                 $timeout(function() {
                   loadStatus(repo);
                 }, timeout);
