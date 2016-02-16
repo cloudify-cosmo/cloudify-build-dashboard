@@ -67,11 +67,11 @@ div.report.failed {
   background: #FF0000;
 }
 
-div.report.started {
+div.report.started, div.report.running  {
   background:#ffeb3b
 }
 
-div.report.created {
+div.report.created, div.report.scheduled {
   background: #FF9900;
 }
 
@@ -103,11 +103,11 @@ div.report div {
   visibility: hidden;
 }
 
-div.report.created div {
+div.report.created, div.report.scheduled div {
   font-size: 14px;
 }
 
-div.report.started div, div.report.created div {
+div.report.started div, div.report.running, div.report.created, div.report.scheduled div {
   visibility: visible;
 }
 
