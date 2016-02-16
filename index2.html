@@ -83,7 +83,7 @@
             'name': repo_name,
             'displayName': title.replace('cloudify-cosmo/', ''),
             'circleBuildLink': '',
-            'circleApiLink': 'https://circleci.com/api/v1/project/' + repo_name + '/tree/master',
+            'circleApiLink': 'https://circleci.com/api/v1/project/' + repo_name,
             'lifecycle': 'uninitialized',
             'customText': '0s',
             'buildsPage': 0,
@@ -98,7 +98,7 @@
 
         function processRepoResponse(repo, response) {
           var builds = _.filter(response.data, function(build) {
-            return build.branch == repo.branch && !(build.lifecycle === 'finished' && build.build_time_millis == 0);
+            return (build.branch == repo.branch || build.vcs_tag == 'bootstrap-sanity') && !(build.lifecycle === 'finished' && build.build_time_millis == 0);
           });
 
           builds = builds.sort(function(x, y) {
@@ -128,16 +128,16 @@
               loadStatus(repo);
             }
 
-            repo.lifecycle = 'not-running';
+            repo.lifecycle = 'not_running';
             return null;
           }
           var build = builds[0];
           repo.branch = build.branch;
           repo.circleBuildLink = 'https://circleci.com/gh/' + repo.name + '/' + build.build_num
           repo.lifecycle = build.lifecycle;
-          if (build.lifecycle == 'created') {
+          if (build.lifecycle == 'scheduled') {
             repo.customText = '0s';
-          } else if (build.lifecycle == 'started') {
+          } else if (build.lifecycle == 'running') {
             var startedAt = new Date(build.started_time);
             var currentTime = new Date();
             repo.customText = Math.max(0, Math.round((currentTime.getTime() - startedAt.getTime()) / 1000)) + 's';
@@ -173,17 +173,17 @@
                 }
               }
               $scope.data = repos.filter(function(r) {
-                return r.lifecycle != 'not-running';
+                return r.lifecycle != 'not_running';
               });
               $scope.builds = repos.filter(function(r) {
-                return r.lifecycle != 'not-running' && isBuildBranch(r.branch);
+                return r.lifecycle != 'not_running' && isBuildBranch(r.branch);
               });
               $scope.disabled = repos.filter(function(r) {
-                return r.lifecycle == 'not-running';
+                return r.lifecycle == 'not_running';
               });
               $scope.updatedAt = getCurrentTime();
 
-              if (repo.lifecycle != 'not-running') {
+              if (repo.lifecycle != 'not_running') {
                 $timeout(function() {
                   loadStatus(repo);
                 }, timeout);
