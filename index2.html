@@ -138,7 +138,7 @@
           if (build.lifecycle == 'scheduled') {
             repo.customText = '0s';
           } else if (build.lifecycle == 'running') {
-            var startedAt = new Date(build.started_time);
+            var startedAt = new Date(build.start_time);
             var currentTime = new Date();
             repo.customText = Math.max(0, Math.round((currentTime.getTime() - startedAt.getTime()) / 1000)) + 's';
           } else if (build.lifecycle == 'finished' && build.status == 'failed') {
@@ -168,7 +168,7 @@
               var build = processRepoResponse(repo, response);
               if (build) {
                 $log.info('build: ' + JSON.stringify(build));
-                if (build.lifecycle == 'started' || build.lifecycle == 'created') {
+                if (build.lifecycle == 'running' || build.lifecycle == 'scheduled') {
                   timeout = 10000;
                 }
               }
