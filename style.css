@@ -22,14 +22,12 @@ body {
   margin-top: 10px;
   border-bottom: 2px solid #005588;
   padding-bottom: 10px;
-  min-height: 40px;
 }
 
 #builds {
   padding-top: 10px;
   padding-bottom: 10px;
   border-bottom: 2px solid #005588;
-  min-height: 40px;
 }
 
 #disabled {
@@ -55,7 +53,7 @@ div.report {
   display: inline-block;
   padding-top: 34px;
   padding-bottom: 16px;
-  font-size: 26px;
+  font-size: 24px;
   background: #C0C0C0;
   text-align: center;
   font-weight: bold;
@@ -67,11 +65,11 @@ div.report.failed {
   background: #FF0000;
 }
 
-div.report.started {
+div.report.started, div.report.running  {
   background:#ffeb3b
 }
 
-div.report.created {
+div.report.created, div.report.scheduled {
   background: #FF9900;
 }
 
@@ -95,6 +93,7 @@ div.report.uninitialized {
 
 div.report div {
   color: #000000;
+  display: inline-block;
   text-align: left;
   font-size: 14px;
   position: relative;
@@ -103,11 +102,11 @@ div.report div {
   visibility: hidden;
 }
 
-div.report.created div {
+div.report.created div, div.report.scheduled div {
   font-size: 14px;
 }
 
-div.report.started div, div.report.created div {
+div.report.started div, div.report.running div, div.report.created div, div.report.scheduled div {
   visibility: visible;
 }
 
