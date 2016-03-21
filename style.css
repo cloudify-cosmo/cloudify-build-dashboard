@@ -103,11 +103,11 @@ div.report div {
   visibility: hidden;
 }
 
-div.report.created, div.report.scheduled div {
+div.report.created div, div.report.scheduled div {
   font-size: 14px;
 }
 
-div.report.started div, div.report.running, div.report.created, div.report.scheduled div {
+div.report.started div, div.report.running div, div.report.created div, div.report.scheduled div {
   visibility: visible;
 }
 
