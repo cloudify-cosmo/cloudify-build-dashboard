@@ -20,9 +20,9 @@ function TravisCtrl($http, $scope, $timeout, $log) {
         ['cloudify-cosmo/docs.getcloudify.org-site', 'circle'],
 
         // UI
-        // ['cloudify-cosmo/cloudify-stage', 'circle'],
-        // ['cloudify-cosmo/cloudify-blueprint-composer', 'circle'],
-        // ['cloudify-cosmo/cloudify-blueprint-topology', 'circle'],
+        // TODO: private repo ['cloudify-cosmo/cloudify-blueprint-composer', 'circle'],
+        // TODO: private repo ['cloudify-cosmo/cloudify-blueprint-topology', 'circle'],
+        ['cloudify-cosmo/cloudify-stage', 'circle'],
         ['cloudify-cosmo/cloudify-ui-common', 'circle'],
         ['cloudify-cosmo/cloudify-ui-components', 'circle'],
         //
