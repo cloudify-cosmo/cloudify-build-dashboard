@@ -1,31 +1,61 @@
 function TravisCtrl($http, $scope, $timeout, $log) {
     var repositories = [
+        //CORE
+        // TODO: private repo ['cloudify-cosmo/cloudify-manager-install', 'circleci'],
+        ['cloudify-cosmo/cloudify-common', 'circle'],
         ['cloudify-cosmo/cloudify-manager', 'circle'],
         ['cloudify-cosmo/cloudify-cli', 'circle'],
+        // TODO: private repo['cloudify-cosmo/cloudify-premium', 'circle'],
+        // TODO: private repo['cloudify-cosmo/patchify', 'circle'],
+        // TODO: private repo['cloudify-cosmo/cloudify-geo-replication', 'circle'],
+        ['cloudify-cosmo/cloudify-agent', 'circle'],
+        ['cloudify-cosmo/cloudify-agent-packager', 'circle'],
+        ['cloudify-cosmo/cloudify-system-tests', 'circle'],
+        // TODO: private repo['cloudify-cosmo/cloudify-build-system', 'circle'],
+        //
+        //
+        // DOCUMENTATION
+        ['cloudify-cosmo/cloudify-rest-docs', 'circle'],
+        ['cloudify-cosmo/docs.getcloudify.org', 'circle'],
+        ['cloudify-cosmo/docs.getcloudify.org-site', 'circle'],
+
+        // UI
+        // TODO: private repo ['cloudify-cosmo/cloudify-blueprint-composer', 'circle'],
+        // TODO: private repo ['cloudify-cosmo/cloudify-blueprint-topology', 'circle'],
+        ['cloudify-cosmo/cloudify-stage', 'circle'],
+        ['cloudify-cosmo/cloudify-ui-common', 'circle'],
+        ['cloudify-cosmo/cloudify-ui-components', 'circle'],
+        //
+        //
+        // PLUGINS
+        ['cloudify-cosmo/cloudify-vsphere-plugin', 'circle'],
+        // TODO: PRIVATE ['cloudify-cosmo/cloudify-aws-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-ansible-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-gcp-plugin', 'circle'],
+        ['OpenStack v3 Plugin', 'circle', 'cloudify-cosmo/cloudify-openstack-plugin', 'master'],
+        ['OpenStack v2.14.20 Plugin ', 'circle', 'cloudify-cosmo/cloudify-openstack-plugin', '2.14.20-build'],
+        ['cloudify-cosmo/cloudify-terraform-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-azure-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-host-pool-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-docker-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-kubernetes-plugin', 'circle'],
+        // TODO: PRIVATE['cloudify-cosmo/cloudify-wagon-build-containers', 'circle'],
+        ['cloudify-cosmo/cloudify-host-pool-service', 'circle'],
+        ['cloudify-cosmo/cloudify-fabric-plugin', 'circle'],
+        ['cloudify-cosmo/cloudify-netconf-plugin', 'circle'],
+        ['wagon', 'travis', 'cloudify-cosmo/wagon', 'master'],
         ['cloudify-cosmo/cloudify-dsl-parser', 'circle'],
+
         ['cloudify-cosmo/cloudify-rest-client', 'circle'],
         ['cloudify-cosmo/cloudify-diamond-plugin', 'circle'],
-        ['cloudify-cosmo/cloudify-docker-plugin', 'circle'],
-        ['cloudify-cosmo/cloudify-cloudstack-plugin', 'circle'],
         ['cloudify-cosmo/cloudify-script-plugin', 'circle'],
-        ['cloudify-cosmo/cloudify-chef-plugin', 'circle'],
-        ['cloudify-cosmo/cloudify-puppet-plugin', 'circle'],
-        ['cloudify-cosmo/cloudify-openstack-plugin', 'circle'],
         ['cloudify-cosmo/cloudify-plugins-common', 'circle'],
-        ['cloudify-cosmo/cloudify-fabric-plugin', 'circle'],
-        ['cloudify-cosmo/cloudify-amqp-influxdb', 'circle'],
-        ['cloudify-cosmo/cloudify-system-tests', 'circle'],
-        ['cloudify-cosmo/cloudify-plugin-template', 'circle'],
-        ['cloudify-cosmo/cloudify-agent-packager', 'circle'],
-        ['cloudify-cosmo/version-tool', 'circle'],
-        ['cloudify-cosmo/cloudify-nodecellar-example', 'circle'],
-        ['cloudify-cosmo/cloudify-manager-blueprints', 'circle'],
-        ['cloudify-cosmo/packman', 'circle'],
-        ['cloudify-cosmo/repex', 'circle'],
-        ['cloudify-cosmo/cloudify-agent', 'circle'],
-        ['hello-world-example', 'circle', 'cloudify-cosmo/cloudify-manager-blueprints', 'master'],
-        ['Bootstrap Sanity', 'travis', 'cloudify-cosmo/cloudify-manager-blueprints', 'bootstrap-sanity']
+        ['cloudify-cosmo/cloudify-plugin-template', 'circle']
+        //TODO PRIVAET ['cloudify-cosmo/cloudify-spire-plugin', 'circle']
+
     ];
+            // ['hello-world-example', 'circle', 'cloudify-cosmo/cloudify-manager-blueprints', 'master'],
+        // ['Bootstrap Sanity', 'travis', 'cloudify-cosmo/cloudify-manager-blueprints', 'bootstrap-sanity']
     repos = _.map(repositories, function (name) {
         var repoName = name[0];
         var title = name[0];
@@ -39,7 +69,7 @@ function TravisCtrl($http, $scope, $timeout, $log) {
         }
         
         var link = (ci == 'travis') ? 'https://api.travis-ci.org/repos/' + repoName + '/builds?event_type=push' :
-        'https://circleci.com/api/v1/project/' + repoName + '/tree/master'
+        'https://circleci.com/api/v1/project/' + repoName + '/tree/' + branch
         
         return {
             'name': repoName,
